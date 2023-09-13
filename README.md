@@ -35,16 +35,16 @@ The images are build by a github, so typically you don't need to build them loca
 
 Run `./makedocker.sh` (Intel) or `./makedockerM1.sh` (Mac M1) in the project root directory. It will create the respecitve image:
 
-- ghcr.io/HCL-TECH-SOFTWARE/mkdocs:latest (Intel)
-- ghcr.io/HCL-TECH-SOFTWARE/mkdocs:m1 (Mac M1)
+- ghcr.io/hcl-tech-software/mkdocs:latest (Intel)
+- ghcr.io/hcl-tech-software/mkdocs:m1 (Mac M1)
 
 ## Local useage
 
 We presume you follow the convention to keep your documentation in the `/docs` directory
 Navigate to your project root directory and run:
 
-- `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs ghcr.io/HCL-TECH-SOFTWARE/mkdocs:m1 $1 $2 $3` (Mac M1)
-- `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs ghcr.io/HCL-TECH-SOFTWARE/mkdocs:latest $1 $2 $3` (Intel / Linux)
+- `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs ghcr.io/hcl-tech-software/mkdocs:m1 $1 $2 $3` (Mac M1)
+- `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs ghcr.io/hcl-tech-software/mkdocs:latest $1 $2 $3` (Intel / Linux)
 
 Replace $1, $2 $3 with valid mkdocs commands ... or omit them
 

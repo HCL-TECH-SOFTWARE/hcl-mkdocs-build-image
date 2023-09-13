@@ -19,7 +19,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -52,8 +52,8 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: |
-            ghcr.io/HCL-TECH-SOFTWARE/mkdocs:latest
-            ghcr.io/HCL-TECH-SOFTWARE/mkdocs:v-${{ env.date }}
+            ghcr.io/hcl-tech-software/mkdocs:latest
+            ghcr.io/hcl-tech-software/mkdocs:v-${{ env.date }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           build-args: GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
