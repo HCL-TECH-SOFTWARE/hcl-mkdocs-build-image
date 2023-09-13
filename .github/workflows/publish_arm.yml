@@ -13,7 +13,6 @@ jobs:
     steps:
       - name: Checkout Backend
         uses: actions/checkout@v3
-      - run: npm install
 
       - name: Setup Docker Buildx
         id: buildx
