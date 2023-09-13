@@ -1,0 +1,9 @@
+#!/bin/bash
+# Run MKDocs in current directory
+if [ -f "mkdocs.yml" ] && [ -d "docs" ]; then
+   echo Found MKDocs settings
+else
+   echo initializing MKDocs
+   docker run --rm -it -v ${PWD}:/docs docker.qs.hcllabs.net/hclcom/mkdocs:latest -q new .
+fi
+docker run --rm -it -p 8000:8000 -v ${PWD}:/docs docker.qs.hcllabs.net/hclcom/mkdocs:latest $1 $2 $3

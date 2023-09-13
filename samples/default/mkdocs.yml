@@ -1,0 +1,87 @@
+#Project Information
+site_name: Site title
+site_url: https://github.com/HCL-TECH-SOFTWARE/...
+site_description: >-
+  Something that makes sense.
+use_directory_urls: true
+# Theme Configuration
+theme:
+  name: material
+  logo: assets/images/logo.jpg
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+    - navigation.instant
+    - search.highlight
+    - search.share
+    - search.suggest
+  #custom_dir: theme_overrides/
+  icon:
+    repo: fontawesome/brands/github
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: favicon.ico
+
+  # Static files
+  static_templates:
+    - 404.html
+
+# Markdown Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+# Copyright
+copyright: >-
+  Copyright &copy; 2022, HCL Technologies Limited -
+  <a href="#__consent">Change cookie settings</a>
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/HCL-TECH-SOFTWARE/...
+  version:
+    provider: mike
+  analytics:
+    provider: google
+    property: UA-Something
+  consent:
+    title: Cookie consent
+    description: >-
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
+    actions:
+      - accept
+      - manage
+
+# Repository
+repo_url: https://github.com/HCL-TECH-SOFTWARE/...
+repo_name: HCL-TECH-SOFTWARE/...
+edit_uri: edit/main/docs
+
+# Customization
+extra_css:
+  - assets/css/keep_style.css
+
+plugins:
+  - section-index
+  - search
+  - awesome-pages
+  - tags
+  - markdownextradata
+  - git-revision-date-localized:
+      type: date
+
+  # TOC using .pages files
