@@ -43,8 +43,8 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-      - name: Build and Push
-        id: docker_build
+      - name: Build and Push Arm
+        id: docker_build_arm
         uses: docker/build-push-action@v4
         with:
           context: ./
@@ -54,6 +54,24 @@ jobs:
           tags: |
             ghcr.io/hcl-tech-software/mkdocs:M1
             ghcr.io/hcl-tech-software/mkdocs:arm-${{ env.date }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          build-args: GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image digest arm
+        run: echo ${{ steps.docker_build_arm.outputs.digest }}
+
+      - name: Build and Push
+        id: docker_build
+        uses: docker/build-push-action@v4
+        with:
+          context: ./
+          file: ./Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          push: true
+          tags: |
+            ghcr.io/hcl-tech-software/mkdocs:latest
+            ghcr.io/hcl-tech-software/mkdocs:v-${{ env.date }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
           build-args: GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
