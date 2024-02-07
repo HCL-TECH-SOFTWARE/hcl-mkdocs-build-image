@@ -1,4 +1,4 @@
-name: Build MKDocs ARM
+name: Build MKDocs ARM & Intel
 
 on:
   push:
