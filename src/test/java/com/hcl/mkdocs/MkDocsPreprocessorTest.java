@@ -44,7 +44,7 @@ class MkDocsPreprocessorTest {
   void checkForExpecetFiles(final String pathString) {
     final Path p = Path.of(pathString, "");
     System.out.println(p.toAbsolutePath());
-    Assertions.assertTrue(p.toFile().exists());
+    Assertions.assertTrue(p.toFile().exists(), p.toString());
   }
 
   @ParameterizedTest
@@ -52,6 +52,6 @@ class MkDocsPreprocessorTest {
   void ensureNoRougeVersion(final String shouldNotExistString) {
     final Path p = Path.of(shouldNotExistString, "");
     System.out.println(p.toAbsolutePath());
-    Assertions.assertFalse(p.toFile().exists());
+    Assertions.assertFalse(p.toFile().exists(), p.toString());
   }
 }

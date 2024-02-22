@@ -11,7 +11,7 @@ Create and maintain a container (a.k.a. Docker) image having all [MKDocs Materia
 
 ## Multi-Version build
 
-The image now contains our [mkdocs-preprocessor](preporcessor.md) which allows to comfortably maintain documentation versions for software version without duplicating sources.
+The image now contains our [mkdocs-preprocessor](preprocessor.md) which allows to comfortably maintain documentation versions for software version without duplicating sources.
 
 ## Build result
 

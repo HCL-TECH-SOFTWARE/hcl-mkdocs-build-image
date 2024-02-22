@@ -1,8 +1,6 @@
 target/e2e/mkdocs.yml
 target/e2e/theme_overrides/sample.css
 target/e2e/docs/assets/test.txt
-target/e2e/docs/v1/test/.pages
-target/e2e/docs/v2/test/.pages
 target/e2e/docs/v3/test/.pages
 target/e2e/docs/v1/info/.pages
 target/e2e/docs/v2/info/.pages
