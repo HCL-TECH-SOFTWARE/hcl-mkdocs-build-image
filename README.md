@@ -9,6 +9,10 @@ Create and maintain a container (a.k.a. Docker) image having all [MKDocs Materia
 - [HCL Volt MX Go](https://github.com/HCL-TECH-SOFTWARE/voltmxgo-documentation)
 - [HCL Domino REST API](https://github.com/HCL-TECH-SOFTWARE/Domino-rest-api/branches)
 
+## Multi-Version build
+
+The image now contains our [mkdocs-preprocessor](preporcessor.md) which allows to comfortably maintain documentation versions for software version without duplicating sources.
+
 ## Build result
 
 The build creates 2 flavors:
@@ -32,16 +36,16 @@ The images are built by GitHub, so typically, you don't need to build them local
 
 Run `./makedocker.sh` for Intel or `./makedockerM1.sh` for Mac M1 in the project root directory. It will create the respecitve images:
 
-- For Intel: ghcr.io/hcl-tech-software/mkdocs:latest 
-- For Mac M1: ghcr.io/hcl-tech-software/mkdocs:m1 
+- For Intel: ghcr.io/hcl-tech-software/mkdocs:latest
+- For Mac M1: ghcr.io/hcl-tech-software/mkdocs:m1
 
 ## Local usage
 
 We presume you follow the convention to keep your documentation in the `/docs` directory.
 Navigate to your project root directory and run:
 
-- For Mac M1: `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs ghcr.io/hcl-tech-software/mkdocs:m1 $1 $2 $3` 
-- For Intel / Linux: `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs ghcr.io/hcl-tech-software/mkdocs:latest $1 $2 $3` 
+- For Mac M1: `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs ghcr.io/hcl-tech-software/mkdocs:m1 $1 $2 $3`
+- For Intel / Linux: `docker run --rm -it -p 8000:8000 -v ${PWD}:/docs ghcr.io/hcl-tech-software/mkdocs:latest $1 $2 $3`
 
 Replace $1, $2, $3 with valid mkdocs commands or omit them.
 

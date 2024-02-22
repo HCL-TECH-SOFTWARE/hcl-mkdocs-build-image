@@ -1,0 +1,7 @@
+source: docs
+target: out
+all_versions:
+  - v1
+  - v2
+  - v3
+generate_redirects: true

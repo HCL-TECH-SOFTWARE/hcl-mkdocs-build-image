@@ -1,0 +1,221 @@
+/*
+ * ==========================================================================
+ * Copyright (C) 2023-2024 HCL America, Inc. ( https://www.hcl.com/ )
+ *                            All rights reserved.
+ * ==========================================================================
+ * Licensed under the  Apache License, Version 2.0  (the "License").  You may
+ * not use this file except in compliance with the License.  You may obtain a
+ * copy of the License at <http://www.apache.org/licenses/LICENSE-2.0>.
+ *
+ * Unless  required  by applicable  law or  agreed  to  in writing,  software
+ * distributed under the License is distributed on an  "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR  CONDITIONS OF ANY KIND, either express or implied.  See the
+ * License for the  specific language  governing permissions  and limitations
+ * under the License.
+ * ==========================================================================
+ */
+package com.hcl.mkdocs;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+
+/**
+ * MkDocsPreprocessor class to handle MkDocs file preprocessing based on the configuration.
+ */
+public class MkDocsPreprocessor {
+
+  /**
+   * Main function to preprocess MkDocs files based on the provided configuration.
+   *
+   * @param args Command-line arguments. Expects one or two arguments - the path to the config file
+   *        and optional "watch" to go on watch mode
+   */
+  public static void main(final String[] args) {
+    if (args.length < 1) {
+      System.err.println("Usage: MkDocsPreprocessor <configFilePath> [watch]");
+      System.exit(1);
+    }
+
+    final boolean watchMode = args.length > 1 && "watch".equals(args[1]);
+
+    final String configFileName = args[0];
+    final Path configFilePath = Path.of(configFileName);
+
+    if (!configFilePath.toFile().exists()) {
+      System.err.printf("Can't find file %s%n", configFilePath.toAbsolutePath());
+      System.exit(2);
+    }
+
+    try {
+      final MkDocsPreprocessor p = new MkDocsPreprocessor(configFilePath, watchMode);
+      p.processFiles();
+    } catch (final Exception e) {
+      e.printStackTrace();
+      System.exit(1);
+    }
+  }
+
+
+  final SiteStructure siteStructure;
+  final AtomicInteger filesCopied = new AtomicInteger();
+  final PreprocessorConfig config;
+
+  /**
+   * @param configFile Path to the config.yml file.
+   * @param watchMode Watch file system for changes
+   * @throws IOException If an I/O error occurs.
+   */
+  public MkDocsPreprocessor(final Path configFile, final boolean watchMode) throws IOException {
+
+
+    // Get values from the configuration YAML File
+    this.config = new PreprocessorConfig(configFile, watchMode);
+    this.siteStructure = new SiteStructure(this.config);
+  }
+
+  public MkDocsPreprocessor(final Path source, final Path target,
+      final List<String> versionStrings, final boolean generateRedirects, final boolean watchMode) {
+    this.config = new PreprocessorConfig(source, target, versionStrings, generateRedirects,
+        watchMode);
+    this.siteStructure = new SiteStructure(this.config);
+  }
+
+  void copyToDestination(final Path incoming, final Path whereTo) {
+    if (!incoming.toFile().isFile()) {
+      // No processing of directories
+      return;
+    }
+    final Path destination =
+        PathUtilities.mapSourceTreeToTarget(this.config.source, whereTo, incoming);
+    try {
+      Files.createDirectories(destination.getParent());
+      Files.copy(incoming, destination, StandardCopyOption.REPLACE_EXISTING);
+      System.out.printf("COPY %s%n  TO %s%n%n", incoming.toAbsolutePath(),
+          destination.toAbsolutePath());
+    } catch (final IOException e) {
+      e.printStackTrace();
+    }
+    this.filesCopied.incrementAndGet();
+  }
+
+  void getExtraDirs() {
+    // handle extra dirs - theme_overrides
+
+    this.config.extraDirs.forEach(dir -> {
+      final Path themeover = this.config.source.resolve(dir);
+      if (themeover.toFile().isDirectory()) {
+        try (Stream<Path> allFiles = Files.walk(themeover)) {
+          allFiles
+              .filter(Files::isRegularFile)
+              .forEach(p -> this.copyToDestination(p, this.config.target));
+        } catch (final Exception e) {
+          e.printStackTrace();
+        }
+      }
+    });
+  }
+
+  void handleOnePath(final Path incoming) {
+    // Determine if we are inside current
+    final Path current = this.config.rootForMarkdownSource();
+    if (incoming.startsWith(current)) {
+      // Processing required
+      this.handleVersions(incoming);
+    } else {
+      // 1:1 copy
+      this.copyToDestination(incoming, this.config.target);
+    }
+  }
+
+  void handleVersions(final Path incoming) {
+    if (!incoming.toFile().isFile()) {
+      // No processing of directories
+      return;
+    }
+    if (incoming.getFileName().toString().endsWith(".md")) {
+      // Handling of markdown
+      this.siteStructure.addPage(incoming);
+    } else if (incoming.getFileName().toString().endsWith(".pages")) {
+      // Handling of pages files
+      this.siteStructure.addMenu(incoming);
+    } else {
+      // 1:1 copies
+      for (final DocVersion v : this.config.versions) {
+        final Path whereto = this.config.rootForMarkdownTarget().resolve(v.toString());
+        this.copyToDestination(incoming, whereto);
+      }
+    }
+  }
+
+
+
+  void makeDirectories() throws IOException {
+    for (final DocVersion version : this.config.versions) {
+      final Path versionDirectory = this.config.target.resolve(version.toString());
+      Files.createDirectories(versionDirectory);
+    }
+  }
+
+  /**
+   * Process the MkDocs files based on the configuration provided
+   *
+   * @throws IOException If an I/O error occurs.
+   */
+  public int processFiles() throws IOException {
+
+    // Check for mkdocs and docs directory
+    final Path mkdocsyml = this.config.source.resolve("mkdocs.yml");
+    if (!mkdocsyml.toFile().exists()) {
+      System.err.printf("mkdocs.yml not found in %s%n", this.config.source.toAbsolutePath());
+      return -1;
+    }
+
+    final Path docdir = this.config.source.resolve(PreprocessorConfig.DOCS_PATH);
+    if (!docdir.toFile().exists() || !docdir.toFile().isDirectory()) {
+      System.err.printf("%s directory not found in %s%n", PreprocessorConfig.DOCS_PATH,
+          this.config.source.toAbsolutePath());
+      return -1;
+    }
+
+    // Setup target structure
+    // Copy mkdocs.yml configuration file
+    final Path docdirTarget = this.config.target.resolve(PreprocessorConfig.DOCS_PATH);
+    final Path mkdocsymlTarget = this.config.target.resolve("mkdocs.yml");
+    Files.createDirectories(docdirTarget);
+    Files.copy(mkdocsyml, mkdocsymlTarget, StandardCopyOption.REPLACE_EXISTING);
+
+    // Copy extra directories like custom_theme
+    this.getExtraDirs();
+
+    // Iterate through the source directory
+    try (Stream<Path> allFiles = Files.walk(docdir)) {
+      allFiles
+          .filter(Files::isRegularFile)
+          .forEach(this::handleOnePath);
+    }
+
+    this.siteStructure.renderOutput();
+
+    if (this.config.watchMode) {
+      this.setupWatchMode();
+    }
+
+    return this.filesCopied.get();
+  }
+
+  void setupWatchMode() {
+    // TODO Implement me!
+    // walk dir - keep map of dirs
+    // get events, don't forget to reset
+    // add-remove dirs from watch
+    // regenerate whole dir (flat)
+    // only changed files save
+
+
+  }
+}

@@ -1,0 +1,4 @@
+nav:
+  - Info: ./info/
+  - Test: ./test/
+  - Deep: ./info/level2/

@@ -1,0 +1,4 @@
+nav:
+  - Info: "current/info"
+  - Test: "current/test"
+  - Demo: "current/info/level2/level3/demo3.md"

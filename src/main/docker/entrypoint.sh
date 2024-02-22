@@ -1,3 +1,5 @@
+#!/bin/sh
+#
 # ==========================================================================
 # Copyright (C) 2023-2024 HCL America, Inc. ( https://www.hcl.com/ )
 #                            All rights reserved.
@@ -12,14 +14,28 @@
 # License for the  specific language  governing permissions  and limitations
 # under the License.
 # ==========================================================================
-FROM ghcr.io/afritzler/mkdocs-material:latest
-LABEL org.opencontainers.image.source="https://github.com/HCL-TECH-SOFTWARE/hcl-mkdocs-build-image"
-LABEL org.opencontainers.image.description "Multi-Version MkDocs build image"
-RUN apk update && apk upgrade && apk add git openjdk17
-RUN pip install mkdocs-awesome-pages-plugin mkdocs-git-revision-date-localized-plugin mike mkdocs-markdownextradata-plugin mkdocs-git-authors-plugin mkdocs-blog-plugin mkdocs-section-index mkdocs-macros-plugin
-COPY target/MkDocsVersions.jar /deployments/
-# COPY src/main/docker/config.yml /deployments/config.yml
-COPY --chmod=555 src/main/docker/entrypoint.sh /deployments/starthere.sh
-ENV JAVA_APP_JAR="/deployments/MkDocsVersions.jar"
-EXPOSE 8000
-ENTRYPOINT [ "../deployments/starthere.sh" ]
+#
+
+# RUN MKDOCS or MKDOCS with preprocessor
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+export PATH=$PATH:$JAVA_HOME/bin
+export LD_LIBRARY_PATH=$JAVA_HOME/lib/server
+
+# Check for parameters
+if [ "$#" -eq 0 ]
+then
+  echo "No arguments supplied, use 'versions' or mkdocs command"
+  exit 1
+fi
+
+# check for Preprocesor vs.mkdocs
+if [ "$1" = "versions" ]; then
+   java -jar /deployments/MkDocsVersions.jar $2
+   # TODO: Serve after generation
+else
+   if [ x$1x = "xx" ]; then
+      mkdocs --dev-addr=0.0.0.0:8000 $1 $2 $3 $4 $5 $6
+   else
+      mkdocs serve --dev-addr=0.0.0.0:8000 $1 $2 $3 $4 $5 $6
+    fi
+fi
