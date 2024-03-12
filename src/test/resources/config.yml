@@ -5,3 +5,4 @@ all_versions:
   - v2
   - v3
 generate_redirects: true
+generate_latest: true

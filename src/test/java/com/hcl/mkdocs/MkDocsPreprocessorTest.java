@@ -35,7 +35,8 @@ class MkDocsPreprocessorTest {
     final List<String> versions = Arrays.asList("v1", "v2", "v3");
     final Path source = MkDocsPreprocessorTest.TEST_RESOURCES_PATH.resolve("e2e");
     final Path target = Path.of("target", "e2e");
-    final MkDocsPreprocessor mdp = new MkDocsPreprocessor(source, target, versions, true, false);
+    final MkDocsPreprocessor mdp =
+        new MkDocsPreprocessor(source, target, versions, true, true, WatchMode.NONE);
     mdp.processFiles();
   }
 
@@ -44,7 +45,7 @@ class MkDocsPreprocessorTest {
   void checkForExpecetFiles(final String pathString) {
     final Path p = Path.of(pathString, "");
     System.out.println(p.toAbsolutePath());
-    Assertions.assertTrue(p.toFile().exists(), p.toString());
+    Assertions.assertTrue(p.toFile().exists());
   }
 
   @ParameterizedTest
@@ -52,6 +53,6 @@ class MkDocsPreprocessorTest {
   void ensureNoRougeVersion(final String shouldNotExistString) {
     final Path p = Path.of(shouldNotExistString, "");
     System.out.println(p.toAbsolutePath());
-    Assertions.assertFalse(p.toFile().exists(), p.toString());
+    Assertions.assertFalse(p.toFile().exists());
   }
 }
