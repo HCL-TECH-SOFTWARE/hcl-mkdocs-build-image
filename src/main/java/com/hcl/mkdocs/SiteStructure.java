@@ -73,7 +73,6 @@ public class SiteStructure {
    * replaces current/ with lastVersion/
    */
   void renderLandingMenu() {
-    // TODO: check for existence of the pages mentioned in .pages
     final Path landingSourceCandidate = this.config.source
         .resolve(PreprocessorConfig.DOCS_PATH)
         .resolve(PreprocessorConfig.PAGES);

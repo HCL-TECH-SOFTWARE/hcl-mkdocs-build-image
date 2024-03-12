@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
@@ -123,6 +124,8 @@ public class YamlUtilities {
     final List<String> strVersions = versions.stream().map(DocVersion::toString).toList();
     yaml.put(PreprocessorConfig.DOC_THIS_VERSION, version.toString());
     yaml.put(PreprocessorConfig.DOC_VERSIONS, strVersions);
+    boolean isLatest = version.toString().equals(strVersions.get(strVersions.size() - 1));
+    yaml.put(PreprocessorConfig.DOC_ISLATEST, isLatest);
   }
 
   public static void replaceFrontMatter(final Path markdownFile, final Map<String, Object> newYaml,

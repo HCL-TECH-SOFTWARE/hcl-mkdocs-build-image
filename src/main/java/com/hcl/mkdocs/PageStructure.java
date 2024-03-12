@@ -147,6 +147,7 @@ public class PageStructure {
         this.preparePageList(this.config.versions, this.options);
 
     Path actual = null;
+    Path from = null;
     DocVersion v = null;
     String title = this.destinationFileName.toString();
 
@@ -154,13 +155,22 @@ public class PageStructure {
       final PageVariation p = entry.getValue();
       v = entry.getKey();
       title = p.title != null ? p.title : this.destinationFileName.toString();
-      final Path from = p.source;
+      from = p.source;
       final Path toCandidate =
           PathUtilities.mapSourceTreeToTarget(this.config.rootForMarkdownSource(),
               this.config.rootForMarkdownTarget().resolve(v.toString()), from);
       actual = toCandidate.getParent().resolve(this.destinationFileName);
       this.copyMarkdown(pages.keySet(), v, from, actual);
 
+    }
+
+    if (this.config.generateLatest && actual != null && from != null) {
+      Path latest = PathUtilities
+          .mapSourceTreeToTarget(this.config.rootForMarkdownSource(),
+              this.config.rootForMarkdownTarget().resolve("latest"), from)
+          .getParent()
+          .resolve(this.destinationFileName);
+      this.copyMarkdown(pages.keySet(), v, from, latest);
     }
 
     if (this.config.generateRedirects) {

@@ -42,7 +42,7 @@ public class PreprocessorConfig {
    * e.g myproject/docs/current
    */
   public static final String DOC_CURRENT_PATH = "current";
-  
+
   public static final String PAGES = ".pages";
   public static final String INDEX = "index.md";
 
@@ -53,7 +53,9 @@ public class PreprocessorConfig {
   public static final String DOC_MAX_VERSION = "max_version";
   public static final String DOC_THIS_VERSION = "this_version";
   public static final String DOC_VERSIONS = "all_versions";
+  public static final String DOC_ISLATEST = "isLatest";
   public static final String GENERATE_REDIRECTS = "generate_redirects";
+  public static final String GENERATE_LATEST = "generate_latest";
 
   public static final String SOURCE_PATH = "source";
   public static final String TARGET_PATH = "target";
@@ -61,29 +63,34 @@ public class PreprocessorConfig {
 
   public final Path source;
   public final Path target;
-  public final boolean watchMode;
+  public final WatchMode watchMode;
   public final Set<DocVersion> versions = new TreeSet<>();
   /**
    * List of directories to copy on a source level
    */
   public final List<String> extraDirs = Arrays.asList("theme_overrides");
   final boolean generateRedirects;
+  final boolean generateLatest;
 
-  public PreprocessorConfig(final Path configFile, final boolean watchMode) throws IOException {
+  public PreprocessorConfig(final Path configFile, final WatchMode watchMode) throws IOException {
     final Map<String, Object> yamlConfig = YamlUtilities.parseYaml(configFile);
     this.source = Path.of(String.valueOf(yamlConfig.get(PreprocessorConfig.SOURCE_PATH)));
     this.target = Path.of(String.valueOf(yamlConfig.get(PreprocessorConfig.TARGET_PATH)));
     this.generateRedirects =
         Boolean.parseBoolean(String.valueOf(yamlConfig.get(PreprocessorConfig.GENERATE_REDIRECTS)));
+    this.generateLatest =
+        Boolean.parseBoolean(String.valueOf(yamlConfig.get(PreprocessorConfig.GENERATE_LATEST)));
     this.watchMode = watchMode;
     this.populateVersions(this.versions, yamlConfig, PreprocessorConfig.DOC_VERSIONS);
   }
 
   public PreprocessorConfig(final Path source, final Path target,
-      final List<String> versionStrings, final boolean generateRedirects, final boolean watchMode) {
+      final List<String> versionStrings, final boolean generateRedirects,
+      final boolean generateLatest, final WatchMode watchMode) {
     this.source = source;
     this.target = target;
     this.generateRedirects = generateRedirects;
+    this.generateLatest = generateLatest;
     versionStrings.forEach(s -> this.versions.add(DocVersion.fromString(s)));
     this.watchMode = watchMode;
   }

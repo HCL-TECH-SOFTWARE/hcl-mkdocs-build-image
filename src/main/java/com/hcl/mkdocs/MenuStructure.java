@@ -45,7 +45,8 @@ public class MenuStructure {
       this.main = incoming;
     } else {
       final DocVersion key =
-          DocVersion.fromString(incoming.getFileName().toString().replace(PreprocessorConfig.PAGES, ""));
+          DocVersion
+              .fromString(incoming.getFileName().toString().replace(PreprocessorConfig.PAGES, ""));
       this.options.put(key, incoming);
     }
   }
@@ -126,10 +127,10 @@ public class MenuStructure {
     return result;
   }
 
-  Path getTarget(final Path actual, final DocVersion v) {
+  Path getTarget(final Path actual, final String vString) {
     final Path pagePath = actual.getParent().resolve(PreprocessorConfig.PAGES);
     final Path source = this.config.rootForMarkdownSource();
-    final Path target = this.config.rootForMarkdownTarget().resolve(v.toString());
+    final Path target = this.config.rootForMarkdownTarget().resolve(vString);
     return PathUtilities.mapSourceTreeToTarget(source, target, pagePath);
   }
 
@@ -147,10 +148,13 @@ public class MenuStructure {
   }
 
   public void renderOutput() {
-    for (final DocVersion v : this.config.versions) {
-      final Path source = this.getSource(v);
+    Path source = null;
+    DocVersion v = null;
+    for (final DocVersion dv : this.config.versions) {
+      v = dv;
+      source = this.getSource(v);
       if (source != null) {
-        final Path actual = this.getTarget(source, v);
+        final Path actual = this.getTarget(source, v.toString());
         try {
           System.out.printf("Copy %s to %s%n", source, actual);
           Files.createDirectories(actual.getParent());
@@ -163,6 +167,18 @@ public class MenuStructure {
         System.err.printf("No .pages file for %s%n", v.toString());
       }
     }
+
+    if (this.config.generateLatest && source != null) {
+      final Path latest = this.getTarget(source, "latest");
+      try {
+        Files.createDirectories(latest.getParent());
+        System.out.printf("COPY %s%n  TO %s%n%n", source, latest);
+        this.inspectAndSave(source, latest);
+      } catch (final IOException e) {
+        e.printStackTrace();
+      }
+    }
+
   }
 
 }

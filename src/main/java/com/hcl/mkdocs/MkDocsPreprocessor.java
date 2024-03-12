@@ -17,10 +17,20 @@
 package com.hcl.mkdocs;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -37,11 +47,13 @@ public class MkDocsPreprocessor {
    */
   public static void main(final String[] args) {
     if (args.length < 1) {
-      System.err.println("Usage: MkDocsPreprocessor <configFilePath> [watch]");
+      System.err.println("Usage: MkDocsPreprocessor <configFilePath> [watch|buildAndWatch]");
       System.exit(1);
     }
 
-    final boolean watchMode = args.length > 1 && "watch".equals(args[1]);
+    final WatchMode watchMode = args.length < 2
+        ? WatchMode.NONE
+        : WatchMode.get(args[1]);
 
     final String configFileName = args[0];
     final Path configFilePath = Path.of(configFileName);
@@ -64,13 +76,14 @@ public class MkDocsPreprocessor {
   final SiteStructure siteStructure;
   final AtomicInteger filesCopied = new AtomicInteger();
   final PreprocessorConfig config;
+  final Map<WatchKey, Path> watchedDirectories = new HashMap<>();
 
   /**
    * @param configFile Path to the config.yml file.
    * @param watchMode Watch file system for changes
    * @throws IOException If an I/O error occurs.
    */
-  public MkDocsPreprocessor(final Path configFile, final boolean watchMode) throws IOException {
+  public MkDocsPreprocessor(final Path configFile, final WatchMode watchMode) throws IOException {
 
 
     // Get values from the configuration YAML File
@@ -78,13 +91,31 @@ public class MkDocsPreprocessor {
     this.siteStructure = new SiteStructure(this.config);
   }
 
+  /**
+   * Constructor to manually prime the preprocessor
+   * 
+   * @param source Path unversioned documentation source
+   * @param target Path target directory
+   * @param versionStrings List of version strings to generate
+   * @param generateRedirects boolean should versionless redirects be generated
+   * @param generateLatest boolean should directory latest be generated
+   * @param watchMode what WatchMode to use
+   */
   public MkDocsPreprocessor(final Path source, final Path target,
-      final List<String> versionStrings, final boolean generateRedirects, final boolean watchMode) {
-    this.config = new PreprocessorConfig(source, target, versionStrings, generateRedirects,
-        watchMode);
+      final List<String> versionStrings, final boolean generateRedirects,
+      final boolean generateLatest, final WatchMode watchMode) {
+    this.config =
+        new PreprocessorConfig(source, target, versionStrings, generateRedirects, generateLatest,
+            watchMode);
     this.siteStructure = new SiteStructure(this.config);
   }
 
+  /**
+   * Copy a file to a destination, creating the directory structure as needed
+   * 
+   * @param incoming Path source file
+   * @param whereTo Path target file
+   */
   void copyToDestination(final Path incoming, final Path whereTo) {
     if (!incoming.toFile().isFile()) {
       // No processing of directories
@@ -103,6 +134,9 @@ public class MkDocsPreprocessor {
     this.filesCopied.incrementAndGet();
   }
 
+  /**
+   * Get all the non-md containing directories and copy them to the target
+   */
   void getExtraDirs() {
     // handle extra dirs - theme_overrides
 
@@ -120,6 +154,13 @@ public class MkDocsPreprocessor {
     });
   }
 
+  /**
+   * Copies a single file to the target directories
+   * after checking if processing for .md or .pages is required
+   * Here happens the version expansion
+   *
+   * @param incoming Path File to be processed
+   */
   void handleOnePath(final Path incoming) {
     // Determine if we are inside current
     final Path current = this.config.rootForMarkdownSource();
@@ -182,6 +223,12 @@ public class MkDocsPreprocessor {
       return -1;
     }
 
+    // Checking for WATCH mode being watch only and skip the buils step
+    if (this.config.watchMode.equals(WatchMode.WATCH_ONLY)) {
+      return setupWatchMode();
+    }
+
+
     // Setup target structure
     // Copy mkdocs.yml configuration file
     final Path docdirTarget = this.config.target.resolve(PreprocessorConfig.DOCS_PATH);
@@ -201,21 +248,99 @@ public class MkDocsPreprocessor {
 
     this.siteStructure.renderOutput();
 
-    if (this.config.watchMode) {
-      this.setupWatchMode();
+    if (this.config.watchMode.equals(WatchMode.BULID_AND_WATCH)) {
+      return this.setupWatchMode();
     }
 
     return this.filesCopied.get();
   }
 
-  void setupWatchMode() {
-    // TODO Implement me!
-    // walk dir - keep map of dirs
-    // get events, don't forget to reset
-    // add-remove dirs from watch
-    // regenerate whole dir (flat)
-    // only changed files save
+  void startWatching(final WatchService watchService, final Path sourceDir) {
 
+    try {
+      Files.walkFileTree(sourceDir, new SimpleFileVisitor<Path>() {
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
+            throws IOException {
+          WatchKey key = dir.register(watchService, StandardWatchEventKinds.ENTRY_CREATE,
+              StandardWatchEventKinds.ENTRY_MODIFY);
+          watchedDirectories.put(key, dir);
+          return FileVisitResult.CONTINUE;
+        }
+      });
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  int setupWatchMode() {
+    try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
+      this.startWatching(watchService, this.config.source);
+      this.watchLoop(watchService);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    return this.filesCopied.get();
+  }
+
+  void watchLoop(WatchService watchService) {
+
+    boolean running = true;
+
+    while (running) {
+      try {
+        WatchKey key = watchService.take();
+        running = eventLoop(key);
+        boolean valid = key.reset();
+        if (!valid) {
+          running = false;
+        }
+      } catch (InterruptedException e) {
+        running = false;
+      }
+    }
 
   }
+
+  boolean eventLoop(final WatchKey key) {
+    boolean success = true;
+    for (WatchEvent<?> event : key.pollEvents()) {
+      success = this.handleWatchEvent(event, key);
+      if (!success) {
+        break;
+      }
+    }
+    return success;
+  }
+
+  private boolean handleWatchEvent(final WatchEvent<?> event, final WatchKey key) {
+    WatchEvent.Kind<?> kind = event.kind();
+    if (kind == StandardWatchEventKinds.OVERFLOW) {
+      System.err.println("Event Overflow happened, pls restart app");
+      return false;
+    }
+
+    Object o = event.context();
+    if (o instanceof Path) {
+      Path filename = (Path) o;
+      Path parent = watchedDirectories.get(key);
+      if (parent == null) {
+        System.err.printf("No parent found for %s%n", filename);
+        return false;
+      }
+      Path fullPath = parent.resolve(filename).toAbsolutePath();
+
+      if (kind == StandardWatchEventKinds.ENTRY_CREATE
+          || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
+        handleOnePath(fullPath);
+      }
+    } else {
+      System.err.printf("Unknown event context %s%n", o.getClass().getName());
+      return false;
+    }
+    return true;
+  }
+
+
+
 }
