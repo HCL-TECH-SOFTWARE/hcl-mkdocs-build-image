@@ -93,7 +93,7 @@ public class MkDocsPreprocessor {
 
   /**
    * Constructor to manually prime the preprocessor
-   * 
+   *
    * @param source Path unversioned documentation source
    * @param target Path target directory
    * @param versionStrings List of version strings to generate
@@ -112,7 +112,7 @@ public class MkDocsPreprocessor {
 
   /**
    * Copy a file to a destination, creating the directory structure as needed
-   * 
+   *
    * @param incoming Path source file
    * @param whereTo Path target file
    */
@@ -329,7 +329,7 @@ public class MkDocsPreprocessor {
         return false;
       }
       Path fullPath = parent.resolve(filename).toAbsolutePath();
-
+      System.out.printf("Change processing for %s%n", fullPath);
       if (kind == StandardWatchEventKinds.ENTRY_CREATE
           || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
         handleOnePath(fullPath);

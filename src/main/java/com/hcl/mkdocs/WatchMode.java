@@ -23,37 +23,37 @@ package com.hcl.mkdocs;
  */
 public enum WatchMode {
 
-    /**
-     * Run build first
-     */
-    BULID_AND_WATCH,
+  /**
+   * Run build first
+   */
+  BULID_AND_WATCH,
 
-    /**
-     * Just watch for changes
-     */
-    WATCH_ONLY,
+  /**
+   * Just watch for changes
+   */
+  WATCH_ONLY,
 
-    /**
-     * DOn't start watch mode
-     */
-    NONE;
+  /**
+   * DOn't start watch mode
+   */
+  NONE;
 
-    /**
-     * Get the watch mode from the incoming string
-     * We only check the first character
-     *
-     * @param incoming String to check
-     * @return WatchMode
-     */
-    public static WatchMode get(String incoming) {
-        String incomingLower = incoming.toLowerCase();
-        if (incomingLower.startsWith("w")) {
-            return WATCH_ONLY;
-        }
-        if (incomingLower.startsWith("b")) {
-            return BULID_AND_WATCH;
-        }
-        return NONE;
+  /**
+   * Get the watch mode from the incoming string
+   * We only check the first character
+   *
+   * @param incoming String to check
+   * @return WatchMode
+   */
+  public static WatchMode get(String incoming) {
+    String incomingLower = incoming.toLowerCase();
+    if (incomingLower.startsWith("w")) {
+      return WATCH_ONLY;
     }
+    if (incomingLower.startsWith("b")) {
+      return BULID_AND_WATCH;
+    }
+    return NONE;
+  }
 
 }
