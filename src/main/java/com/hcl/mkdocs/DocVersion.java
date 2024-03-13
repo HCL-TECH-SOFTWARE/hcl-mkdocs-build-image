@@ -102,16 +102,25 @@ public class DocVersion implements Comparable<DocVersion> {
     this.subpatch = subpatch;
   }
 
+  /**
+   * Compare two DocVersions, comparison looks at each part of the
+   * version number in order of major, minor, patch, subpatch.
+   */
   @Override
   public int compareTo(final DocVersion incoming) {
     if (this.major == incoming.major && this.minor == incoming.minor
         && this.patch == incoming.patch) {
       return Integer.compare(this.subpatch, incoming.subpatch);
-    } else if (this.major == incoming.major && this.minor == incoming.minor) {
+    }
+
+    if (this.major == incoming.major && this.minor == incoming.minor) {
       return Integer.compare(this.patch, incoming.patch);
-    } else if (this.major == incoming.major) {
+    }
+
+    if (this.major == incoming.major) {
       return Integer.compare(this.minor, incoming.minor);
     }
+
     return Integer.compare(this.major, incoming.major);
   }
 

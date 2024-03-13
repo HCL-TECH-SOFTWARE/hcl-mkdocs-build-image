@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # ==========================================================================
 # Copyright (C) 2023-2024 HCL America, Inc. ( https://www.hcl.com/ )
@@ -66,7 +66,7 @@ runMkDocs() {
 # Check for parameters
 if [ "$#" -eq 0 ]
 then
-  echo "You need to supply arguments (behinD mkdocs:latest) to run this image!"
+  echo "You need to supply arguments (behind mkdocs:latest) to run this image!"
   echo "PREPROCESSOR:"
   echo "versions [path-to-config.yml] = run the versions preprocessor and exit"
   echo "versions [path-to-config.yml] buildAndWatch = run the versions preprocessor, switch to watch mode and run mkdocs serve"
