@@ -9,4 +9,5 @@ all_versions:
   - v3
   - v5.1
 # Generate files without version number to point to the latet version
-generate_redirects: true
+generate_redirects: true,
+generate_latest: true

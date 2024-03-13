@@ -41,16 +41,19 @@ public class SiteStructure {
     this.config = config;
   }
 
-  public void addMenu(final Path incoming) {
+  public void addMenu(final Path incoming, final RenderTime renderTime) {
     final Path parent = incoming.getParent();
     final MenuStructure ms = this.menus.containsKey(parent)
         ? this.menus.get(parent)
         : new MenuStructure(parent, this.config);
     ms.addMenu(incoming);
     this.menus.put(parent, ms);
+    if (RenderTime.NOW.equals(renderTime)) {
+      ms.renderOutput();
+    }
   }
 
-  public void addPage(final Path incoming) {
+  public void addPage(final Path incoming, final RenderTime renderTime) {
     final DocVersion version = DocVersion.fromPath(incoming);
     final Path versionFree = this.getVersionFree(incoming, version);
     final PageStructure ps = this.pages.containsKey(versionFree)
@@ -58,6 +61,9 @@ public class SiteStructure {
         : new PageStructure(versionFree, this.config);
     ps.addPath(version, incoming);
     this.pages.put(versionFree, ps);
+    if (RenderTime.NOW.equals(renderTime)) {
+      ps.renderOutput();
+    }
   }
 
   Path getVersionFree(final Path incoming, final DocVersion version) {

@@ -160,30 +160,31 @@ public class MkDocsPreprocessor {
    * Here happens the version expansion
    *
    * @param incoming Path File to be processed
+   * @param renderTime When to render the file, now or later
    */
-  void handleOnePath(final Path incoming) {
+  void handleOnePath(final Path incoming, final RenderTime renderTime) {
     // Determine if we are inside current
     final Path current = this.config.rootForMarkdownSource();
     if (incoming.startsWith(current)) {
       // Processing required
-      this.handleVersions(incoming);
+      this.handleVersions(incoming, renderTime);
     } else {
       // 1:1 copy
       this.copyToDestination(incoming, this.config.target);
     }
   }
 
-  void handleVersions(final Path incoming) {
+  void handleVersions(final Path incoming, final RenderTime renderTime) {
     if (!incoming.toFile().isFile()) {
       // No processing of directories
       return;
     }
     if (incoming.getFileName().toString().endsWith(".md")) {
       // Handling of markdown
-      this.siteStructure.addPage(incoming);
+      this.siteStructure.addPage(incoming, renderTime);
     } else if (incoming.getFileName().toString().endsWith(".pages")) {
       // Handling of pages files
-      this.siteStructure.addMenu(incoming);
+      this.siteStructure.addMenu(incoming, renderTime);
     } else {
       // 1:1 copies
       for (final DocVersion v : this.config.versions) {
@@ -243,7 +244,7 @@ public class MkDocsPreprocessor {
     try (Stream<Path> allFiles = Files.walk(docdir)) {
       allFiles
           .filter(Files::isRegularFile)
-          .forEach(this::handleOnePath);
+          .forEach(f -> this.handleOnePath(f, RenderTime.LATER));
     }
 
     this.siteStructure.renderOutput();
@@ -328,11 +329,11 @@ public class MkDocsPreprocessor {
         System.err.printf("No parent found for %s%n", filename);
         return false;
       }
-      Path fullPath = parent.resolve(filename).toAbsolutePath();
+      Path fullPath = parent.resolve(filename);
       System.out.printf("Change processing for %s%n", fullPath);
       if (kind == StandardWatchEventKinds.ENTRY_CREATE
           || kind == StandardWatchEventKinds.ENTRY_MODIFY) {
-        handleOnePath(fullPath);
+        handleOnePath(fullPath, RenderTime.NOW);
       }
     } else {
       System.err.printf("Unknown event context %s%n", o.getClass().getName());
