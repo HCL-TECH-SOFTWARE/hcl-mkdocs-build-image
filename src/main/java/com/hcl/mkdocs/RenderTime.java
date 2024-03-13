@@ -23,13 +23,13 @@ package com.hcl.mkdocs;
  * @author stwissel
  */
 public enum RenderTime {
-    /**
-     * Render the file later in batch mode
-     */
-    LATER,
+  /**
+   * Render the file later in batch mode
+   */
+  LATER,
 
-    /**
-     * Render the file immediately, used in watch mode
-     */
-    NOW
+  /**
+   * Render the file immediately, used in watch mode
+   */
+  NOW
 }
