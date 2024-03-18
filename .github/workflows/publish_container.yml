@@ -57,7 +57,7 @@ jobs:
 
       - name: Build and Push Arm
         id: docker_build_arm
-        uses: docker/build-push-action@v5.1.0
+        uses: docker/build-push-action@v5.3.0
         with:
           context: ./
           file: ./DockerfileM1
@@ -76,7 +76,7 @@ jobs:
 
       - name: Build and Push
         id: docker_build
-        uses: docker/build-push-action@v5.1.0
+        uses: docker/build-push-action@v5.3.0
         with:
           context: ./
           file: ./Dockerfile
