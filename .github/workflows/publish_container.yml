@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Backend
-        uses: actions/checkout@v4.1.2
+        uses: actions/checkout@v4.1.6
 
         # Setup hardware emulator using QEMU
       - name: Set up QEMU
