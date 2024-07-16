@@ -1,0 +1,19 @@
+{
+   "title": "MKDocs HCL Editior",
+   "motivation": "preonfigured Material for MKDocs container with version management extensions",
+   "contribution": [
+      "Bugfixes",
+      "Features",
+      "Enhancement",
+      "Infrastructure"
+   ],
+   "skills": [
+      "Java",
+      "Python",
+      "Markdown",
+      "HTTP"
+   ],
+   "owner_Id": "jason.gary@hcl-software.com",
+   "docs": "https://github.com/HCL-TECH-SOFTWARE/hcl-mkdocs-build-image/",
+   "language": "Java"
+}
