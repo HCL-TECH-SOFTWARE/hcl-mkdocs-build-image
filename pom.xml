@@ -19,7 +19,7 @@
         <surefire-plugin.version>3.2.5</surefire-plugin.version>
         <snakeyaml.version>2.2</snakeyaml.version>
         <spotless.version>2.43.0</spotless.version>
-        <maven.license.plugin.version>4.3</maven.license.plugin.version>
+        <maven.license.plugin.version>4.5</maven.license.plugin.version>
         <main.class>com.hcl.mkdocs.MkDocsPreprocessor</main.class>
     </properties>
 
