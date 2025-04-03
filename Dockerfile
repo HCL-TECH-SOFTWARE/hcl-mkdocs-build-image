@@ -15,7 +15,7 @@
 
 FROM squidfunk/mkdocs-material:latest
 LABEL org.opencontainers.image.source="https://github.com/HCL-TECH-SOFTWARE/hcl-mkdocs-build-image"
-LABEL org.opencontainers.image.description "Multi-Version MkDocs build image"
+LABEL org.opencontainers.image.description="Multi-Version MkDocs build image"
 RUN apk update && apk upgrade && apk add --no-cache git openjdk17 bash
 RUN pip install mkdocs-awesome-pages-plugin mkdocs-git-revision-date-localized-plugin mike mkdocs-markdownextradata-plugin mkdocs-git-authors-plugin mkdocs-blog-plugin mkdocs-section-index mkdocs-macros-plugin
 COPY target/MkDocsVersions.jar /deployments/
